@@ -1,0 +1,127 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  annotations:
+    kompose.cmd: kompose convert -f compose.yml
+    kompose.version: 1.28.0 (HEAD)
+  creationTimestamp: null
+  labels:
+    io.kompose.service: rules-engine
+  name: rules-engine
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      io.kompose.service: rules-engine
+  strategy:
+    type: Recreate
+  template:
+    metadata:
+      annotations:
+        kompose.cmd: kompose convert -f compose.yml
+        kompose.version: 1.28.0 (HEAD)
+      creationTimestamp: null
+      labels:
+        io.kompose.network/edgex-edgex-network: "true"
+        io.kompose.service: rules-engine
+    spec:
+      containers:
+        - command:
+            - /edgex-init/kuiper_wait_install.sh
+          env:
+            - name: CONNECTION__EDGEX__REDISMSGBUS__PORT
+              value: "6379"
+            - name: CONNECTION__EDGEX__REDISMSGBUS__PROTOCOL
+              value: redis
+            - name: CONNECTION__EDGEX__REDISMSGBUS__SERVER
+              value: edgex-redis
+            - name: CONNECTION__EDGEX__REDISMSGBUS__TYPE
+              value: redis
+            - name: EDGEX__DEFAULT__PORT
+              value: "6379"
+            - name: EDGEX__DEFAULT__PROTOCOL
+              value: redis
+            - name: EDGEX__DEFAULT__SERVER
+              value: edgex-redis
+            - name: EDGEX__DEFAULT__TOPIC
+              value: edgex/rules-events
+            - name: EDGEX__DEFAULT__TYPE
+              value: redis
+            - name: KUIPER__BASIC__CONSOLELOG
+              value: "true"
+            - name: KUIPER__BASIC__RESTPORT
+              value: "59720"
+            - name: PROXY_SETUP_HOST
+              value: edgex-security-proxy-setup
+            - name: STAGEGATE_BOOTSTRAPPER_HOST
+              value: edgex-security-bootstrapper
+            - name: STAGEGATE_BOOTSTRAPPER_STARTPORT
+              value: "54321"
+            - name: STAGEGATE_DATABASE_HOST
+              value: edgex-redis
+            - name: STAGEGATE_DATABASE_PORT
+              value: "6379"
+            - name: STAGEGATE_DATABASE_READYPORT
+              value: "6379"
+            - name: STAGEGATE_READY_TORUNPORT
+              value: "54329"
+            - name: STAGEGATE_REGISTRY_HOST
+              value: edgex-core-consul
+            - name: STAGEGATE_REGISTRY_PORT
+              value: "8500"
+            - name: STAGEGATE_REGISTRY_READYPORT
+              value: "54324"
+            - name: STAGEGATE_SECRETSTORESETUP_HOST
+              value: edgex-security-secretstore-setup
+            - name: STAGEGATE_SECRETSTORESETUP_TOKENS_READYPORT
+              value: "54322"
+            - name: STAGEGATE_WAITFOR_TIMEOUT
+              value: 60s
+          image: lfedge/ekuiper:1.9.1-alpine
+          name: edgex-kuiper
+          ports:
+            - containerPort: 59720
+              hostIP: 127.0.0.1
+          resources: {}
+          volumeMounts:
+            - mountPath: /edgex-init
+              name: edgex-init
+              readOnly: true
+            - mountPath: /kuiper/data
+              name: kuiper-data
+            - mountPath: /kuiper/etc
+              name: kuiper-etc
+            - mountPath: /kuiper/etc/connections
+              name: kuiper-connections
+            - mountPath: /kuiper/etc/sources
+              name: kuiper-sources
+            - mountPath: /kuiper/log
+              name: kuiper-log
+            - mountPath: /kuiper/plugins
+              name: kuiper-plugins
+      hostname: edgex-kuiper
+      restartPolicy: Always
+      volumes:
+        - name: edgex-init
+          persistentVolumeClaim:
+            claimName: edgex-init
+            readOnly: true
+        - name: kuiper-data
+          persistentVolumeClaim:
+            claimName: kuiper-data
+        - name: kuiper-etc
+          persistentVolumeClaim:
+            claimName: kuiper-etc
+        - name: kuiper-connections
+          persistentVolumeClaim:
+            claimName: kuiper-connections
+        - name: kuiper-sources
+          persistentVolumeClaim:
+            claimName: kuiper-sources
+        - name: kuiper-log
+          persistentVolumeClaim:
+            claimName: kuiper-log
+        - name: kuiper-plugins
+          persistentVolumeClaim:
+            claimName: kuiper-plugins
+status: {}

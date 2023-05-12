@@ -1,0 +1,40 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  annotations:
+    kompose.cmd: kompose convert -f compose.yml
+    kompose.version: 1.28.0 (HEAD)
+  creationTimestamp: null
+  labels:
+    io.kompose.service: ui
+  name: ui
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      io.kompose.service: ui
+  strategy: {}
+  template:
+    metadata:
+      annotations:
+        kompose.cmd: kompose convert -f compose.yml
+        kompose.version: 1.28.0 (HEAD)
+      creationTimestamp: null
+      labels:
+        io.kompose.network/edgex-edgex-network: "true"
+        io.kompose.service: ui
+    spec:
+      containers:
+        - env:
+            - name: EDGEX_SECURITY_SECRET_STORE
+              value: "true"
+            - name: SERVICE_HOST
+              value: edgex-ui-go
+          image: nexus3.edgexfoundry.org:10004/edgex-ui-arm64:latest
+          name: edgex-ui-go
+          ports:
+            - containerPort: 4000
+          resources: {}
+      hostname: edgex-ui-go
+      restartPolicy: Always
+status: {}

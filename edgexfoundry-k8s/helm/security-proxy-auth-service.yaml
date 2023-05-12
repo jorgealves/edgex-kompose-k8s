@@ -1,0 +1,19 @@
+apiVersion: v1
+kind: Service
+metadata:
+  annotations:
+    kompose.cmd: kompose convert -f compose.yml
+    kompose.version: 1.28.0 (HEAD)
+  creationTimestamp: null
+  labels:
+    io.kompose.service: security-proxy-auth
+  name: security-proxy-auth
+spec:
+  ports:
+    - name: "59842"
+      port: 59842
+      targetPort: 59842
+  selector:
+    io.kompose.service: security-proxy-auth
+status:
+  loadBalancer: {}
